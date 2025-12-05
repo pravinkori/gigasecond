@@ -1,12 +1,16 @@
 from datetime import timedelta
 
-def breakdown(td: timedelta):
+def breakdown(td: timedelta) -> tuple[int, int, int, int, int]:
     total = int(td.total_seconds())
-    negative = total < 0
-    abs_total = abs(total)
-    days = abs_total // 86400
-    hours = (abs_total % 86400) // 3600
-    minutes = (abs_total % 3600) // 60
-    seconds = abs_total % 60
-    return (days if not negative else -days), hours, minutes, seconds, total
-
+    if total < 0:
+        total = abs(total)
+        negative = True
+    else:
+        negative = False
+    days = total // 86400
+    hours = (total % 86400) // 3600
+    minutes = (total % 3600) // 60
+    seconds = total % 60
+    if negative:
+        return -days, hours, minutes, seconds, int(td.total_seconds())
+    return days, hours, minutes, seconds, int(td.total_seconds())
