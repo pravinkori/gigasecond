@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gigasecond"
+version = "0.1.0"
+description = "Calculate age / countdown to billionth second with a Textual TUI"
+authors = [
+    { name = "Pravin Kori", email="pravinkori@protonmail.ch"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "textual>=6.7.1",
+]
+
+[project.scripts]
+gigasecond = "gigasecond.cli:main"
