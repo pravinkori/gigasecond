@@ -22,110 +22,184 @@ from gigasecond.utils import breakdown
 
 
 class ResultPanel(Static):
-    """Shows static computation results."""
+    """Shows static computation results with progress visualization."""
 
     def show_results(self, dob: datetime, milestone_seconds: int):
         now = datetime.now()
         age_td = now - dob
         _, _, _, _, total_seconds = breakdown(age_td)
         milestone_time = dob + timedelta(seconds=milestone_seconds)
+        
+        # Calculate progress percentage
+        progress = min(100, (total_seconds / milestone_seconds) * 100)
+        
+        # Create visual progress bar
+        bar_length = 30
+        filled = int(bar_length * progress / 100)
+        bar = "█" * filled + "░" * (bar_length - filled)
+        
+        # Color coding based on proximity
+        if progress < 50:
+            color = "green"
+        elif progress < 90:
+            color = "yellow"
+        else:
+            color = "red"
+        
         text = (
-            f"[b]Date of Birth:[/] {dob}\n\n"
-            f"[b]Total seconds lived:[/] {total_seconds:,}\n\n"
-            f"[b]Milestone:[/] {milestone_seconds:,} seconds\n"
-            f"[b]Milestone occurs on:[/] {milestone_time}\n"
+            f"[b cyan]📅 Date of Birth[/]\n"
+            f"   {dob.strftime('%B %d, %Y at %H:%M')}\n\n"
+            
+            f"[b magenta]⏱️  Current Age[/]\n"
+            f"   {total_seconds:,} seconds\n\n"
+            
+            f"[b {color}]🎯 Milestone Progress[/]\n"
+            f"   [{color}]{bar}[/] {progress:.1f}%\n"
+            f"   Target: {milestone_seconds:,} seconds\n\n"
+            
+            f"[b blue]🎉 Milestone Date[/]\n"
+            f"   {milestone_time.strftime('%B %d, %Y at %H:%M:%S')}\n"
         )
         self.update(text)
 
 
 class LivePanel(Static):
-    """Shows real-time age & countdown."""
+    """Shows real-time age & countdown with visual flair."""
 
     def update_live(self, dob: Optional[datetime], milestone_seconds: Optional[int]):
         now = datetime.now()
+        
         if dob is None:
-            self.update("[i]No DOB entered yet.[/]")
+            self.update(
+                "[dim]   Enter your date of birth to see\n"
+                "   your age ticking in real-time...[/]"
+            )
             return
 
         age_td = now - dob
         ad, ah, am, asec, atot = breakdown(age_td)
 
+        # Build age section
+        age_text = (
+            "[b green]⚡ Live Age Counter[/]\n"
+            f"   [cyan]{ad:,}[/] days  "
+            f"[cyan]{ah:02d}[/]:[cyan]{am:02d}[/]:[cyan]{asec:02d}[/]\n"
+        )
+
+        # Build countdown section
         if milestone_seconds is None:
-            countdown_text = "Select a milestone"
+            countdown_text = "\n[b yellow]🎯 Countdown[/]\n   [dim]Select a milestone above[/]"
         else:
             milestone_time = dob + timedelta(seconds=milestone_seconds)
             remaining_td = milestone_time - now
             rd, rh, rm, rs, rtot = breakdown(remaining_td)
+            
             if remaining_td.total_seconds() > 0:
-                countdown_text = f"{rd}d {rh}h {rm}m {rs}s remaining"
+                # Calculate urgency color
+                days_left = remaining_td.days
+                if days_left > 365:
+                    urgency_color = "green"
+                    icon = "🟢"
+                elif days_left > 30:
+                    urgency_color = "yellow"
+                    icon = "🟡"
+                else:
+                    urgency_color = "red"
+                    icon = "🔴"
+                
+                countdown_text = (
+                    f"\n[b {urgency_color}]⏳ Countdown to Milestone[/] {icon}\n"
+                    f"   [bold]{rd:,}[/] days, "
+                    f"[bold]{rh:02d}[/]:[bold]{rm:02d}[/]:[bold]{rs:02d}[/]\n"
+                    f"   [dim]({rtot:,} seconds remaining)[/]"
+                )
             else:
-                countdown_text = f"Passed {( -int(remaining_td.total_seconds()) ):,} seconds ago"
+                seconds_past = -int(remaining_td.total_seconds())
+                countdown_text = (
+                    "\n[b magenta]🎊 Milestone Achieved![/]\n"
+                    f"   Passed {seconds_past:,} seconds ago\n"
+                    f"   [dim]on {milestone_time.strftime('%b %d, %Y')}[/]"
+                )
 
-        text = (
-            "[b green]Real-time age[/]\n"
-            f" • {ad} days, {ah} hours, {am} minutes, {asec} seconds\n\n"
-            "[b cyan]Countdown[/]\n"
-            f" • {countdown_text}\n"
-        )
-        self.update(text)
+        self.update(age_text + countdown_text)
 
 
-class ErrorModal(Static):
-    """Error overlay modal."""
-
+class InlineError(Static):
+    """Inline error message with auto-dismiss."""
+    
     DEFAULT_CSS = """
-    ErrorModal {
-        layer: overlay;
-        background: #1c1c1c;
-        border: heavy red;
-        padding: 2 2;
-        width: 60%;
-        content-align: center middle;
+    InlineError {
+        color: $error;
+        background: $error 20%;
+        border: solid $error;
+        padding: 1 2;
+        margin: 1 0;
+        display: none;
+    }
+    
+    InlineError.visible {
+        display: block;
     }
     """
-
+    
     def show(self, message: str):
-        self.update(f"[b red]Error:[/] {message}\n\nPress any key to dismiss")
-        self.styles.display = "block"
-
-    def hide(self):
-        self.styles.display = "none"
+        self.update(f"⚠️  {message}")
+        self.add_class("visible")
+        self.set_timer(5.0, lambda: self.remove_class("visible"))
 
 
 class GigasecondApp(App):
     CSS = """
     Screen {
         align: center middle;
-        padding: 1;
     }
 
-    Input, Select {
-        width: 100%;
-    }
-
+    /* Improved panel styling with depth */
     .panel {
-        border: round #666;
-        padding: 1 1;
+        border: heavy $accent;
+        padding: 2;
         height: auto;
-        width: 1fr;
+        background: $surface;
     }
 
-    .controls {
-        min-width: 38%;
-        max-width: 48%;
+    .panel-title {
+        text-style: bold;
+        color: $accent;
+        margin-bottom: 1;
     }
 
-    .results {
-        min-width: 52%;
+    /* Better input styling */
+    Input {
+        border: solid $primary;
+        margin: 1 0;
     }
 
-    Label {
-        padding-bottom: 1;
+    Input:focus {
+        border: heavy $accent;
+    }
+
+    /* Hide custom input by default */
+    #custom_milestone {
+        display: none;
+    }
+
+    #custom_milestone.visible {
+        display: block;
+    }
+
+    /* Smooth animations */
+    .fade-in {
+        transition: opacity 300ms;
     }
     """
-
+    # BINDINGS = [
+    #     ("q", "quit", "Quit"),
+    # ]
     BINDINGS = [
         ("q", "quit", "Quit"),
+        ("r", "reset", "Reset"),
+        ("c", "calculate", "Calculate"),
+        ("escape", "clear_errors", "Clear"),
     ]
 
     dob: Optional[datetime] = reactive(None)
@@ -139,6 +213,7 @@ class GigasecondApp(App):
             with Vertical(classes="panel controls"):
                 yield Label("Enter your date & time of birth:")
                 yield Input(placeholder="YYYY-MM-DD or YYYY-MM-DD HH:MM", id="dob_input")
+                yield InlineError(id="inline_error")
                 yield Button("Calculate", id="calc_btn")
                 yield Label("Pick a milestone (billions) or enter custom:")
                 yield Select(
@@ -158,23 +233,17 @@ class GigasecondApp(App):
                 yield ResultPanel(id="result_panel")
                 yield LivePanel(id="live_panel")
 
-        modal = ErrorModal(id="error_modal")
-        modal.hide()
-        yield modal
-
     def on_mount(self) -> None:
         self.set_interval(1.0, self._periodic_update)
         self.milestone_seconds = BILLION
 
     def _show_error(self, message: str) -> None:
-        modal = self.query_one("#error_modal", ErrorModal)
-        modal.show(message)
-        self.set_focus(modal)
+        error = self.query_one("#inline_error", InlineError)
+        error.show(message)
 
     def _hide_error(self) -> None:
-        modal = self.query_one("#error_modal", ErrorModal)
-        modal.hide()
-        self.set_focus(self.query_one("#dob_input", Input))
+        error = self.query_one("#inline_error", InlineError)
+        error.remove_class("visible")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "calc_btn":
@@ -187,12 +256,15 @@ class GigasecondApp(App):
             self._apply_custom_milestone(event.value)
 
     def on_select_changed(self, event: Select.Changed) -> None:
-        value = event.value
-        if value == "custom":
-            self.query_one("#custom_milestone", Input).focus()
+        custom_input = self.query_one("#custom_milestone", Input)
+    
+        if event.value == "custom":
+            custom_input.add_class("visible")
+            custom_input.focus()
         else:
+            custom_input.remove_class("visible")
             try:
-                billions = float(value)
+                billions = float(event.value)
                 self.milestone_seconds = int(billions * BILLION)
             except Exception:
                 self.milestone_seconds = BILLION
@@ -244,6 +316,7 @@ class GigasecondApp(App):
         live_panel.update_live(dob, ms)
 
     def on_key(self, event) -> None:
-        modal = self.query_one("#error_modal", ErrorModal)
-        if modal.styles.display == "block":
-            self._hide_error()
+        if event.key == "escape":
+            error = self.query_one("#inline_error", InlineError)
+            error.remove_class("visible")
+
