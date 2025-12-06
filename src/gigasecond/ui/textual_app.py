@@ -40,25 +40,25 @@ class ResultPanel(Static):
         
         # Color coding based on proximity
         if progress < 50:
-            color = "green"
+            color = "#22c55e"  # green
         elif progress < 90:
-            color = "yellow"
+            color = "#fbbf24"  # yellow
         else:
-            color = "red"
+            color = "#ef4444"  # red
         
         text = (
-            f"[b cyan]📅 Date of Birth[/]\n"
-            f"   {dob.strftime('%B %d, %Y at %H:%M')}\n\n"
+            f"[bold #8b7ff4]📅 Date of Birth[/]\n"
+            f"[#a8b2d1]   {dob.strftime('%B %d, %Y at %H:%M')}[/]\n\n"
             
-            f"[b magenta]⏱️  Current Age[/]\n"
-            f"   {total_seconds:,} seconds\n\n"
+            f"[bold #ec4899]⏱️  Current Age[/]\n"
+            f"[#a8b2d1]   {total_seconds:,} seconds[/]\n\n"
             
-            f"[b {color}]🎯 Milestone Progress[/]\n"
-            f"   [{color}]{bar}[/] {progress:.1f}%\n"
-            f"   Target: {milestone_seconds:,} seconds\n\n"
+            f"[bold {color}]🎯 Milestone Progress[/]\n"
+            f"[{color}]   {bar}[/] [bold]{progress:.1f}%[/]\n"
+            f"[#6b7280]   Target: {milestone_seconds:,} seconds[/]\n\n"
             
-            f"[b blue]🎉 Milestone Date[/]\n"
-            f"   {milestone_time.strftime('%B %d, %Y at %H:%M:%S')}\n"
+            f"[bold #3b82f6]🎉 Milestone Date[/]\n"
+            f"[#a8b2d1]   {milestone_time.strftime('%B %d, %Y at %H:%M:%S')}[/]\n"
         )
         self.update(text)
 
@@ -71,7 +71,7 @@ class LivePanel(Static):
         
         if dob is None:
             self.update(
-                "[dim]   Enter your date of birth to see\n"
+                "[dim #6b7280]💭 Enter your date of birth to see\n"
                 "   your age ticking in real-time...[/]"
             )
             return
@@ -81,14 +81,14 @@ class LivePanel(Static):
 
         # Build age section
         age_text = (
-            "[b green]⚡ Live Age Counter[/]\n"
-            f"   [cyan]{ad:,}[/] days  "
-            f"[cyan]{ah:02d}[/]:[cyan]{am:02d}[/]:[cyan]{asec:02d}[/]\n"
+            "[bold #22c55e]⚡ Live Age Counter[/]\n"
+            f"   [#8b7ff4]{ad:,}[/] days  "
+            f"[#22c55e]{ah:02d}[/]:[#22c55e]{am:02d}[/]:[#22c55e]{asec:02d}[/]\n"
         )
 
         # Build countdown section
         if milestone_seconds is None:
-            countdown_text = "\n[b yellow]🎯 Countdown[/]\n   [dim]Select a milestone above[/]"
+            countdown_text = "\n[bold #fbbf24]🎯 Countdown[/]\n   [dim #6b7280]Select a milestone above[/]"
         else:
             milestone_time = dob + timedelta(seconds=milestone_seconds)
             remaining_td = milestone_time - now
@@ -98,27 +98,27 @@ class LivePanel(Static):
                 # Calculate urgency color
                 days_left = remaining_td.days
                 if days_left > 365:
-                    urgency_color = "green"
+                    urgency_color = "#22c55e"
                     icon = "🟢"
                 elif days_left > 30:
-                    urgency_color = "yellow"
+                    urgency_color = "#fbbf24"
                     icon = "🟡"
                 else:
-                    urgency_color = "red"
+                    urgency_color = "#ef4444"
                     icon = "🔴"
                 
                 countdown_text = (
                     f"\n[b {urgency_color}]⏳ Countdown to Milestone[/] {icon}\n"
                     f"   [bold]{rd:,}[/] days, "
                     f"[bold]{rh:02d}[/]:[bold]{rm:02d}[/]:[bold]{rs:02d}[/]\n"
-                    f"   [dim]({rtot:,} seconds remaining)[/]"
+                    f"   [dim #6b7280]({rtot:,} seconds remaining)[/]"
                 )
             else:
                 seconds_past = -int(remaining_td.total_seconds())
                 countdown_text = (
-                    "\n[b magenta]🎊 Milestone Achieved![/]\n"
+                    "\n[b #ec4899]🎊 Milestone Achieved![/]\n"
                     f"   Passed {seconds_past:,} seconds ago\n"
-                    f"   [dim]on {milestone_time.strftime('%b %d, %Y')}[/]"
+                    f"   [dim #6b7280]on {milestone_time.strftime('%b %d, %Y')}[/]"
                 )
 
         self.update(age_text + countdown_text)
@@ -152,33 +152,126 @@ class GigasecondApp(App):
     CSS = """
     Screen {
         align: center middle;
+        # background: $background;
     }
 
-    /* Improved panel styling with depth */
-    .panel {
-        border: heavy $accent;
-        padding: 2;
-        height: auto;
-        background: $surface;
+    /* Modern color palette */
+    * {
+        scrollbar-background: #1a1a2e;
+        scrollbar-color: #6c63ff;
     }
 
-    .panel-title {
-        text-style: bold;
-        color: $accent;
-        margin-bottom: 1;
-    }
-
-    /* Better input styling */
+    /* Input styling */
     Input {
         border: solid $primary;
         margin: 1 0;
     }
 
     Input:focus {
-        border: heavy $accent;
+        border: heavy #8b7ff4;
+        background: #1a2744;
     }
 
-    /* Hide custom input by default */
+    /* Select styling */
+    Select {
+        border: round #6c63ff;
+        background: #16213e;
+        color: #e8e8e8;
+        padding: 1 2;
+        margin: 1 0;
+        width: 100%;
+    }
+
+    Select:focus {
+        border: heavy #8b7ff4;
+    }
+
+    /* Button styling */
+    Button {
+        border: round #22c55e;
+        background: #16a34a;
+        color: white;
+        margin: 1 0;
+        width: 100%;
+    }
+
+    Button:hover {
+        background: #22c55e;
+        border: heavy #4ade80;
+    }
+
+    Button:focus {
+        border: heavy #86efac;
+    }
+
+    /* Checkbox styling */
+    Checkbox {
+        border: round #6c63ff;
+        background: #16213e;
+        padding: 1;
+        margin: 1 0;
+    }
+
+    Checkbox:focus {
+        border: heavy #8b7ff4;
+    }
+
+    /* Panel containers */
+    .panel {
+        border: round #3d5a80;
+        background: #0f1419;
+        padding: 2;
+        height: auto;
+        margin: 1;
+    }
+
+    .controls {
+        min-width: 38%;
+        max-width: 48%;
+    }
+
+    .results {
+        min-width: 52%;
+    }
+
+    /* Labels */
+    Label {
+        color: #a8b2d1;
+        padding-bottom: 1;
+        text-style: bold;
+    }
+
+    /* Result panels */
+    #result_panel {
+        border: round #6c63ff;
+        background: #16213e;
+        padding: 2;
+        margin-bottom: 1;
+        min-height: 12;
+    }
+
+    #live_panel {
+        border: round #22c55e;
+        background: #16213e;
+        padding: 2;
+        min-height: 8;
+    }
+
+    /* Inline error styling */
+    InlineError {
+        color: #fca5a5;
+        background: #7f1d1d;
+        border: round #dc2626;
+        padding: 1 2;
+        margin: 1 0;
+        display: none;
+    }
+
+    InlineError.visible {
+        display: block;
+    }
+
+    /* Custom milestone input - hidden by default */
     #custom_milestone {
         display: none;
     }
@@ -187,20 +280,46 @@ class GigasecondApp(App):
         display: block;
     }
 
-    /* Smooth animations */
-    .fade-in {
-        transition: opacity 300ms;
+    /* Header and Footer */
+    Header {
+        background: #6c63ff;
+        color: white;
+    }
+
+    Footer {
+        background: #1a1a2e;
+    }
+
+    /* Horizontal container spacing */
+    Horizontal {
+        height: auto;
+        margin: 1 2;
     }
     """
-    # BINDINGS = [
-    #     ("q", "quit", "Quit"),
-    # ]
+
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("r", "reset", "Reset"),
         ("c", "calculate", "Calculate"),
         ("escape", "clear_errors", "Clear"),
     ]
+
+    def action_reset(self) -> None:
+        """Reset the form."""
+        self.query_one("#dob_input", Input).value = ""
+        self.query_one("#result_panel", ResultPanel).update("")
+        self.dob = None
+        self.milestone_seconds = BILLION
+        self.query_one("#milestone_select", Select).value = "1"
+    
+    def action_calculate(self) -> None:
+        """Trigger calculation."""
+        self._handle_calculate()
+    
+    def action_clear_errors(self) -> None:
+        """Clear error messages."""
+        error = self.query_one("#inline_error", InlineError)
+        error.remove_class("visible")
 
     dob: Optional[datetime] = reactive(None)
     milestone_seconds: Optional[int] = reactive(None)
