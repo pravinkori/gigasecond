@@ -38,3 +38,7 @@ A gigasecond is exactly 1,000,000,000 seconds - or about 31.7 years. It's that m
 ## Contributing
 
 Found a bug or have a fun feature idea? Pull requests are welcome!
+
+## License
+
+MIT License. See LICENSE file.
