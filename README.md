@@ -11,6 +11,8 @@ Built using Textual 6.7.1, this application features:
 - Multiple milestone calculator
 - Clean, responsive layout with Textual widgets
 
+![screenshot of TUI app](./docs/image.png)
+
 ## What's a Gigasecond?
 
 A gigasecond is exactly 1,000,000,000 seconds - or about 31.7 years. It's that magical moment when your life's clock hits ten digits!
