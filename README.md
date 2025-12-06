@@ -27,7 +27,9 @@ A gigasecond is exactly 1,000,000,000 seconds - or about 31.7 years. It's that m
 
 3. Install dependencies
 
-   `pip install textual-dev`
+   ```bash
+   pip install textual-dev
+   ```
 
 4. Run the application
    ```bash
